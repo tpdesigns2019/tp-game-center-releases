@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>TP Game Center · Yahoo sign-in</title>
+<style>
+:root{--bg:#05080f;--ink:#eef2fa;--mute:#a9b3c7;--gold:#f2c94c}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 18px}
+main{max-width:520px;margin:0 auto}
+h1{font-size:22px;margin:0 0 10px;color:var(--gold)} p{color:var(--mute)}
+a.btn{display:inline-block;margin:10px 0;padding:12px 18px;border-radius:999px;background:linear-gradient(180deg,#f7dc7a,#c9952e);color:#1b1404;font-weight:700;text-decoration:none}
+code{display:block;word-break:break-all;background:#101a2c;border:1px solid #2a3753;border-radius:10px;padding:12px;font-size:15px;color:var(--ink);margin:8px 0}
+button{font:inherit;padding:8px 14px;border-radius:999px;border:1px solid #2a3753;background:#101a2c;color:var(--ink)}
+</style></head>
+<body><main id="m"><h1>TP Game Center</h1><p>One moment…</p></main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), m = document.getElementById('m');
+  var code = q.get('code'), state = q.get('state') || '', err = q.get('error');
+  function show(html) { m.innerHTML = '<h1>TP Game Center</h1>' + html; }
+  if (err) { show('<p>Yahoo sign-in was cancelled. Go back to the Game Center and try again.</p>'); return; }
+  if (!code) { show('<p>This page finishes signing in to Yahoo for TP Game Center. Start from the Game Center app.</p>'); return; }
+  var st = null; try { st = JSON.parse(atob(state.replace(/-/g, '+').replace(/_/g, '/'))); } catch (e) {}
+  // only ever hand back to a Game Center on a home network or Tailscale
+  var ok = st && typeof st.b === 'string' && /^http:\/\/((10|127)(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])(\.\d{1,3}){2}|[a-z0-9-]+(\.[a-z0-9-]+)*\.ts\.net)(:\d{2,5})?$/i.test(st.b);
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }); };
+  if (!ok) { show('<p>Signed in to Yahoo. Copy this code into the Game Center (⚙ → My fantasy team → “Yahoo showed you a code instead?”):</p><code>' + esc(code) + '</code><button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + esc(code) + '\')">Copy code</button>'); return; }
+  var back = st.b + '/yauth?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state);
+  show('<p>Signed in to Yahoo. Taking you back to the Game Center…</p><a class="btn" href="' + esc(back) + '">Back to Game Center</a>' +
+    '<p>Not going back? Make sure you’re on the same Wi-Fi as the PC (or Tailscale is on), then tap the button. Or copy this code into the Game Center (⚙ → My fantasy team → “Yahoo showed you a code instead?”):</p><code>' + esc(code) + '</code>');
+  setTimeout(function () { location.replace(back); }, 400);
+})();
+</script></body></html>
