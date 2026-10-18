@@ -19,7 +19,7 @@ jobs:
           V="${GITHUB_REF_NAME#release/}"
           EXE="TP-Game-Center-Setup-$V.exe"
           echo "version=$V"; ls -la
-          parts=$(ls "$EXE".part* 2>/dev/null | sort)
+          parts=$(ls "${EXE%.exe}".part* 2>/dev/null | sort)
           [ -n "$parts" ] || { echo "::error::No installer parts found for $EXE"; exit 1; }
           cat $parts > "$EXE" || { echo "::error::Could not join parts"; exit 1; }
           got=$(sha256sum "$EXE" | cut -d' ' -f1); want=$(tr -d ' \r\n' < SHA256)
